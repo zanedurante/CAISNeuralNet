@@ -1,3 +1,3 @@
-## Lesson 5 Coding Workshop
+## Neural Networks Workshop (Lessons 4-5)
 
-For now just an unorganized collection of lessons. 
+* Workshop date: October 16, 2017

@@ -18,10 +18,10 @@ class NN(object):
         self.layers = layers
 
         for layer in layers:
-            self.activations.append(np.zeros(hidden_layer))
+            self.activations.append(np.zeros(layers))
 
         for i, layer in enumerate(layers[:-1]):
-            self.weights.append(initialize_weights((layer, layers[i + 1])))
+            self.weights.append(initialize_weights(layer, layers[i + 1]))
 
 
     def feed_forward(self, inputs):
