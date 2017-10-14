@@ -13,4 +13,7 @@ Workshop date: October 16, 2017
 * Activate environment: `source activate caispp`
 * Install keras (deep learning library): `pip install keras`
 * Install keras-tqdm (for progress bars): `pip install keras-tqdm`
+* Install h5py: `pip install h5py`
+* Install ipywidgets: `conda install -c conda-forge ipywidgets`
+* Enable widgets: `jupyter nbextension enable --py --sys-prefix widgetsnbextension`
 * Launch jupyter notebook: `jupyter notebook`
