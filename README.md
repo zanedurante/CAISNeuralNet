@@ -1,6 +1,8 @@
 ## Neural Networks Workshop (Lessons 4-5)
 
-Online lesson: [Lesson 5 (Neural Networks, Training)](http://caisplusplus.usc.edu/blog/curriculum/lesson5)
+Online lessons: 
+* [Lesson 4 (Neural Networks, Architecture)](http://caisplusplus.usc.edu/blog/curriculum/lesson4)
+* [Lesson 5 (Neural Networks, Training)](http://caisplusplus.usc.edu/blog/curriculum/lesson5)
 
 Workshop date: October 16, 2017
 
