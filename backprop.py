@@ -1,5 +1,4 @@
 import numpy as np
-from caispp import datasets
 
 
 # Some helper functions.
@@ -59,7 +58,7 @@ class NN(object):
 
 
     def back_propagate(self, targets, learning_rate):
-        # s^L = f'(n^L) * (d J)/(d a)
+        # delta^L = f'(n^L) * (d J)/(d a)
         # (d J)/(d a) = a
         # In this case (d J)/(d a) = (a^L - t) as we are just using a basic
         # mean squared error.
@@ -73,13 +72,13 @@ class NN(object):
 
         while m >= 0:
             if m != len(self.layers) - 2:
-                # s^m = f'(z^m) * (W^(m+1))^T * s^(m+1)
+                # delta^m = f'(z^m) * (W^(m+1))^T * detla^(m+1)
                 f_prime = dsigmoid(self.activations[m + 1])
                 delta_m = f_prime * self.weights[m + 1].T.dot(delta_m_next)
             else:
                 delta_m = delta_L
 
-            # W^m (k+1) = W^m(k) - \alpha s^m * (a^(m-1))^T
+            # W^m (k+1) = W^m(k) - \alpha delta^m * (a^(m-1))^T
             # Keep in mind k is fixed as this is a single iteration.
             self.weights[m] -= learning_rate * delta_m.dot(self.activations[m].T)
             delta_m_next = delta_m
@@ -107,7 +106,8 @@ class NN(object):
 
             print('%i: Error %.5f' % (i, error))
 
-X, Y = datasets.download_uci_seeds()
+data = np.loadtxt('data/pima-indians-diabetes.data.txt', delimiter=',')
+X, Y = data[:, :8], data[:, 8]
 
 # Load the data into numpy arrays.
 X = np.array(X)
