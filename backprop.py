@@ -65,8 +65,7 @@ class NN(object):
             if m != len(self.layers) - 2:
                 # s^m = f'(z^m) * (W^(m+1))^T * s^(m+1)
                 f_prime = dsigmoid(self.activations[m + 1])
-                F_prime = np.diag(f_prime.flatten())
-                s_m = F_prime.dot(self.weights[m + 1].T).dot(s_m_next)
+                s_m = f_prime * self.weights[m + 1].T.dot(s_m_next)
             else:
                 s_m = s_L
 
