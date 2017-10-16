@@ -2,35 +2,42 @@ import numpy as np
 from caispp import datasets
 
 
+# Some helper functions.
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
+# Derivative of sigmoid
 def dsigmoid(y):
     return y * (1.0 - y)
 
+# Helper function for intitializing weight matrices.
+# you can put whatever weight intitialization scheme you want here.
 def initialize_weights(d0, d1):
     return np.random.randn(d0, d1)
 
 
 class NN(object):
     def __init__(self, layers):
+        # a, the output with non-linearity applied.
         self.activations = []
+        # z, the weighted output.
         self.z = []
+        # W
         self.weights = []
+        # The dimensions of our layers.
         self.layers = layers
 
+        # Initialize the dimensions of our layers.
         for layer in layers:
             self.activations.append(np.zeros(layer))
             self.z.append(np.zeros(layer))
 
+        # Initialize the weight values
         for i, layer in enumerate(layers[:-1]):
             self.weights.append(initialize_weights(layers[i + 1], layer))
 
 
     def feed_forward(self, inputs):
-        #if len(inputs) != :
-        #    raise ValueError('Network is not compatible with this many inputs')
-
         # a^0 = x
         self.activation_input = np.array(inputs[:])
 
@@ -54,42 +61,49 @@ class NN(object):
     def back_propagate(self, targets, learning_rate):
         # s^L = f'(n^L) * (d J)/(d a)
         # (d J)/(d a) = a
-        # In this case (d J)/(d a) = (a^L - t)
+        # In this case (d J)/(d a) = (a^L - t) as we are just using a basic
+        # mean squared error.
 
+        # Compute the error to get the final sensitivity term
         error = self.activations[-1] - targets
-        s_L= dsigmoid(self.activations[-1]) * error
+        delta_L= dsigmoid(self.activations[-1]) * error
 
-        m = len(self.layers) - 2
+        # Start with the final weight transformation
+        m = len(self.weights) - 1
 
         while m >= 0:
             if m != len(self.layers) - 2:
                 # s^m = f'(z^m) * (W^(m+1))^T * s^(m+1)
                 f_prime = dsigmoid(self.activations[m + 1])
-                s_m = f_prime * self.weights[m + 1].T.dot(s_m_next)
+                delta_m = f_prime * self.weights[m + 1].T.dot(delta_m_next)
             else:
-                s_m = s_L
+                delta_m = delta_L
 
             # W^m (k+1) = W^m(k) - \alpha s^m * (a^(m-1))^T
             # Keep in mind k is fixed as this is a single iteration.
-            self.weights[m] -= learning_rate * s_m.dot(self.activations[m].T)
-            s_m_next = s_m
+            self.weights[m] -= learning_rate * delta_m.dot(self.activations[m].T)
+            delta_m_next = delta_m
             m -= 1
 
         error = 0.0
-        # Mean squared error.
+
+        # Compute the mean squared error.
         for k in range(len(targets)):
+            print('Target was %s' % (targets[k]))
+            print('Actual was %s' % (self.activations[-1][k]))
             error += 0.5 * (targets[k] - self.activations[-1][k]) ** 2
 
         return error
 
 
-    def train(self, patterns, iterations = 3000, learning_rate = 0.0002):
+    def train(self, patterns, iterations = 3000, learning_rate = 0.001):
         for i in range(iterations):
             error = 0.0
             for p in patterns:
                 inputs = p[0]
                 targets = p[1]
 
+                # Compute forward and backwards pass
                 self.feed_forward(inputs)
                 error = self.back_propagate(targets, learning_rate)
 
@@ -99,9 +113,17 @@ X, Y = datasets.download_uci_seeds()
 
 # Load the data into numpy arrays.
 X = np.array(X)
+
+# We have to pad with another dimension so we can mutliply by matrices.
 X = X.reshape((X.shape[0], X.shape[1], 1))
 Y = np.array(Y)
+
+# Same as above, we have to pad with another dimension to be able to multiply
+# by matrices
 Y = Y.reshape((Y.shape[0], 1))
 
+# Hidden layer of 20 neurons
 nn = NN([X.shape[1], 20, Y.shape[1]])
 nn.train(list(zip(X, Y)))
+
+
