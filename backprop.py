@@ -1,69 +1,85 @@
 import numpy as np
 from caispp import datasets
 
+
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def dsigmoid(y):
     return y * (1.0 - y)
 
-def initialize_weights(dim):
-    return np.random.randn(dim)
+def initialize_weights(d0, d1):
+    return np.random.randn(d0, d1)
 
 
 class NN(object):
     def __init__(self, layers):
         self.activations = []
+        self.z = []
         self.weights = []
         self.layers = layers
 
         for layer in layers:
-            self.activations.append(np.zeros(layers))
+            self.activations.append(np.zeros(layer))
+            self.z.append(np.zeros(layer))
 
         for i, layer in enumerate(layers[:-1]):
-            self.weights.append(initialize_weights(layer, layers[i + 1]))
+            self.weights.append(initialize_weights(layers[i + 1], layer))
 
 
     def feed_forward(self, inputs):
-        if len(inputs) != self.input:
-            raise ValueError('Network is not compatible with this many inputs')
+        #if len(inputs) != :
+        #    raise ValueError('Network is not compatible with this many inputs')
 
         # a^0 = x
         self.activation_input = np.array(inputs[:])
 
-        ai = np.array(inputs[:])
-        self.activations[0] = ai
+        # to keep track of generalized a^i
+        a_m = self.activation_input
+        self.activations[0] = a_m
+        self.z[0] = a_m
 
-        for i, weight_hidden in enumerate(self.weights_hiddens):
-            # n^(m + 1) = W^(m + 1)a^m
-            ni = weight_hidden.dot(ai)
-            # a^(m + 1) = f(n^(m + 1))
-            ai = sigmoid(ni)
-            self.activations[i + 1] = ai
+        for i, next_weight in enumerate(self.weights):
+            # z^(m + 1) = W^(m + 1)a^m
+            z_m_next = next_weight.dot(a_m)
+            # a^(m + 1) = f(z^(m + 1))
+            a_m_next = sigmoid(z_m_next)
+
+            self.activations[i + 1] = a_m_next
+            self.z[i + 1] = z_m_next
+
+            a_m = a_m_next
 
 
     def back_propagate(self, targets, learning_rate):
-        if len(targets) != self.output:
-            raise ValueError('Number of targets not correct')
-
         # s^L = f'(n^L) * (d J)/(d a)
         # (d J)/(d a) = a
         # In this case (d J)/(d a) = (a^L - t)
 
-        error = self.activation_output - targets
-        sL= dsigmoid(self.activations[-1]) * error
+        error = self.activations[-1] - targets
+        s_L= dsigmoid(self.activations[-1]) * error
 
-        # as we have already computed the last.
-        s_next = sL
-        i = len(layers) - 2
-        while i >= 1:
-            si = dsigmoid(self.activations[i]).dot(self.weights[i + 1].T).dot(s_next)
-            self.weights[i] -= learning_rate * si.dot(self.activations[i - 1].T)
-            s_next = si
+        m = len(self.layers) - 2
+
+        while m >= 0:
+            if m != len(self.layers) - 2:
+                # s^m = f'(z^m) * (W^(m+1))^T * s^(m+1)
+                f_prime = dsigmoid(self.activations[m + 1])
+                F_prime = np.diag(f_prime.flatten())
+                s_m = F_prime.dot(self.weights[m + 1].T).dot(s_m_next)
+            else:
+                s_m = s_L
+
+            # W^m (k+1) = W^m(k) - \alpha s^m * (a^(m-1))^T
+            # Keep in mind k is fixed as this is a single iteration.
+            self.weights[m] -= learning_rate * s_m.dot(self.activations[m].T)
+            s_m_next = s_m
+            m -= 1
 
         error = 0.0
+        # Mean squared error.
         for k in range(len(targets)):
-            error += 0.5 * (targets[k] - self.activation[-1][k]) ** 2
+            error += 0.5 * (targets[k] - self.activations[-1][k]) ** 2
 
         return error
 
@@ -84,6 +100,7 @@ X, Y = datasets.download_uci_seeds()
 
 # Load the data into numpy arrays.
 X = np.array(X)
+X = X.reshape((X.shape[0], X.shape[1], 1))
 Y = np.array(Y)
 Y = Y.reshape((Y.shape[0], 1))
 
