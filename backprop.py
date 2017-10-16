@@ -89,8 +89,6 @@ class NN(object):
 
         # Compute the mean squared error.
         for k in range(len(targets)):
-            print('Target was %s' % (targets[k]))
-            print('Actual was %s' % (self.activations[-1][k]))
             error += 0.5 * (targets[k] - self.activations[-1][k]) ** 2
 
         return error
